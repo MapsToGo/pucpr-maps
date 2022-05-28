@@ -39,12 +39,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
-
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 filterListDestinationFound(charSequence);
+                updateListView();
             }
-
             @Override
             public void afterTextChanged(Editable editable) {
             }
@@ -70,4 +69,10 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(this.adapterListDestinationsFound);
     }
 
+    private void updateListView() {
+        ListView listView = findViewById(R.id.listViewDestinationsFound);
+        int height = this.listDestinationsFound.size() > 0 ? 80 * this.listDestinationsFound.size() : 1;
+        listView.getLayoutParams().height = height;
+        this.adapterListDestinationsFound.notifyDataSetChanged();
+    }
 }
