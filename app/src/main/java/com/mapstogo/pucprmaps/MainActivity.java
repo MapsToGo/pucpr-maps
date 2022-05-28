@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void filterListDestinationFound(CharSequence charSequence) {
         this.listDestinationsFound.clear();
+        if(charSequence.toString().equalsIgnoreCase(""))
+            return;
         String strSearch = charSequence.toString().toLowerCase();
         for(DestinationModelView dest : this.listDestinationLoaded){
             if(dest.getName().toLowerCase().contains(strSearch)){
@@ -71,7 +73,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateListView() {
         ListView listView = findViewById(R.id.listViewDestinationsFound);
-        int height = this.listDestinationsFound.size() > 0 ? 80 * this.listDestinationsFound.size() : 1;
+        int height = 80 * this.listDestinationsFound.size();
+        height = height > 240 ? 240 : height;
+        height = height <= 0 ? 1 : height;
         listView.getLayoutParams().height = height;
         this.adapterListDestinationsFound.notifyDataSetChanged();
     }
