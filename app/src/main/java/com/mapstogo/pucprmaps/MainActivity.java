@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         loadDestinations();
         configEditText();
         configAdapterListDestinationsFound();
+        configListView();
     }
 
     private void loadDestinations() {
@@ -62,6 +63,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void configAdapterListDestinationsFound() {
         this.adapterListDestinationsFound = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, this.listDestinationsFound);
+    }
+
+    private void configListView() {
+        ListView listView = findViewById(R.id.listViewDestinationsFound);
+        listView.setAdapter(this.adapterListDestinationsFound);
     }
 
 }
