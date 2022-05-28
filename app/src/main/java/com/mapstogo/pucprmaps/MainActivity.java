@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
     private List<DestinationModelView> listDestinationLoaded = new ArrayList<>();
     private List<DestinationModelView> listDestinationsFound = new ArrayList<>();
+    private ArrayAdapter<DestinationModelView> adapterListDestinationsFound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         loadDestinations();
         configEditText();
+        configAdapterListDestinationsFound();
     }
 
     private void loadDestinations() {
@@ -55,4 +59,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void configAdapterListDestinationsFound() {
+        this.adapterListDestinationsFound = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, this.listDestinationsFound);
+    }
+
 }
