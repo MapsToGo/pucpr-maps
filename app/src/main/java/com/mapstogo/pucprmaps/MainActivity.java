@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadDestinations() {
-        List<DestinationModelView> listLoaded = new DestinationModelViewMemoryFactory().getAllDestinations();
+        List<DestinationModelView> listLoaded = new DestinationModelViewMemoryFactory().createListDestinationsModelView();
         this.listDestinationLoaded.addAll(listLoaded);
     }
 
