@@ -5,11 +5,13 @@ public class DestinationModelView {
     private String name;
     private String description;
     private String img;
+    private int id;
 
-    public DestinationModelView(String name, String description, String img) {
+    public DestinationModelView(String name, String description, String img, int id) {
         this.name = name;
         this.description = description;
         this.img = img;
+        this.id = id;
     }
 
     public String getName() {
@@ -34,6 +36,14 @@ public class DestinationModelView {
 
     public void setImg(String img) {
         this.img = img;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override

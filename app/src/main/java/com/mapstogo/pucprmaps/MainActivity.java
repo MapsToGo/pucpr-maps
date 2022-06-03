@@ -2,11 +2,15 @@ package com.mapstogo.pucprmaps;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.media.Image;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -79,4 +83,5 @@ public class MainActivity extends AppCompatActivity {
         listView.getLayoutParams().height = height;
         this.adapterListDestinationsFound.notifyDataSetChanged();
     }
+
 }
