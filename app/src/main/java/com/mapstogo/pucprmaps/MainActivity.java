@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -20,13 +21,16 @@ public class MainActivity extends AppCompatActivity {
 
     private List<DestinationModelView> listDestinationLoaded = new ArrayList<>();
     private List<DestinationModelView> listDestinationsFound = new ArrayList<>();
+    private List<DestinationModelView> listDestinationsRecents = new ArrayList<>();
     private ArrayAdapter<DestinationModelView> adapterListDestinationsFound;
+    private boolean aberturView = Boolean.TRUE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         loadDestinations();
+        configInitRecents();
         configEditText();
         configAdapterListDestinationsFound();
         configListView();
@@ -51,17 +55,32 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
             }
         });
+        editTextSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus){
+                    return;
+                }
+                updateListViewHeight();
+                updateListView();
+            }
+        });
     }
 
     private void searchTextChanged(CharSequence charSequence) {
         filterListDestinationFound(charSequence);
+        updateListViewHeight();
         updateListView();
     }
 
+
+
     private void filterListDestinationFound(CharSequence charSequence) {
         this.listDestinationsFound.clear();
-        if(charSequence.toString().equalsIgnoreCase(""))
+        if(charSequence.toString().equalsIgnoreCase("")){
+            setRecentsToFound();
             return;
+        }
         String strSearch = charSequence.toString().toLowerCase();
         for(DestinationModelView dest : this.listDestinationLoaded){
             if(dest.getName().toLowerCase().contains(strSearch)){
@@ -87,12 +106,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateListView() {
+        this.adapterListDestinationsFound.notifyDataSetChanged();
+    }
+
+    private void updateListViewHeight() {
         ListView listView = findViewById(R.id.listViewDestinationsFound);
         int height = 80 * this.listDestinationsFound.size();
         height = height > 240 ? 240 : height;
         height = height <= 0 ? 1 : height;
         listView.getLayoutParams().height = height;
-        this.adapterListDestinationsFound.notifyDataSetChanged();
     }
 
     private void destinationSelected(DestinationModelView dest) {
@@ -115,6 +137,16 @@ public class MainActivity extends AppCompatActivity {
     private void updateImageView(DestinationModelView dest) {
         ImageView imageView = findViewById(R.id.imageView);
         imageView.setImageResource(dest.getIdImg());
+    }
+
+    private void configInitRecents() {
+        this.listDestinationsRecents.addAll(this.listDestinationLoaded.subList(0, 3));
+        setRecentsToFound();
+    }
+
+    private void setRecentsToFound() {
+        this.listDestinationsFound.clear();
+        this.listDestinationsFound.addAll(this.listDestinationsRecents);
     }
 
 }
