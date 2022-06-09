@@ -1,10 +1,14 @@
 package com.mapstogo.pucprmaps;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -12,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +39,22 @@ public class MainActivity extends AppCompatActivity {
         configAdapterListDestinationsRecents();
         configListViewFounds();
         configListViewRecents();
+        configIconQrCode();
+    }
+
+    private void configIconQrCode() {
+        ImageView view = findViewById(R.id.imageViewIconQrCode);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                gotoImageViewReadCamera();
+            }
+        });
+    }
+
+    private void gotoImageViewReadCamera() {
+        Intent intentGoToImageViewCamera = new Intent(this, ReadQrCodeActivity.class);
+        startActivity(intentGoToImageViewCamera);
     }
 
     private void loadDestinations() {
@@ -55,18 +76,6 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
             }
         });
-        /*
-        editTextSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if(!hasFocus){
-                    return;
-                }
-                updateListViewFoundHeight();
-                updateListView();
-            }
-        });
-        */
     }
 
     private void searchTextChanged(CharSequence charSequence) {
@@ -187,8 +196,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateImageView(DestinationModelView dest) {
-        ImageView imageView = findViewById(R.id.imageView);
+        ImageView imageView = findViewById(R.id.imageViewDestinations);
         imageView.setImageResource(dest.getIdImg());
     }
 
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        setImageSearchInit();
+    }
+
+    private void setImageSearchInit() {
+        ImageView imageView = findViewById(R.id.imageViewDestinations);
+        imageView.setImageResource(R.drawable.img_map_init);
+    }
 }
