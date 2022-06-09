@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -23,17 +22,18 @@ public class MainActivity extends AppCompatActivity {
     private List<DestinationModelView> listDestinationsFound = new ArrayList<>();
     private List<DestinationModelView> listDestinationsRecents = new ArrayList<>();
     private ArrayAdapter<DestinationModelView> adapterListDestinationsFound;
-    private boolean aberturView = Boolean.TRUE;
+    private ArrayAdapter<DestinationModelView> adapterListDestinationsRecentes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         loadDestinations();
-        configInitRecents();
         configEditText();
         configAdapterListDestinationsFound();
-        configListView();
+        configAdapterListDestinationsRecents();
+        configListViewFounds();
+        configListViewRecents();
     }
 
     private void loadDestinations() {
@@ -55,22 +55,29 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
             }
         });
+        /*
         editTextSearch.setOnFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if(!hasFocus){
                     return;
                 }
-                updateListViewHeight();
+                updateListViewFoundHeight();
                 updateListView();
             }
         });
+        */
     }
 
     private void searchTextChanged(CharSequence charSequence) {
         filterListDestinationFound(charSequence);
-        updateListViewHeight();
-        updateListView();
+        if(charSequence.toString().equalsIgnoreCase("")){
+            updateListViewRecentsHeight();
+        } else {
+            updateListViewRecentsHeight(1);
+        }
+        updateListViewFoundHeight();
+        updateListViewFound();
     }
 
 
@@ -78,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
     private void filterListDestinationFound(CharSequence charSequence) {
         this.listDestinationsFound.clear();
         if(charSequence.toString().equalsIgnoreCase("")){
-            setRecentsToFound();
             return;
         }
         String strSearch = charSequence.toString().toLowerCase();
@@ -93,23 +99,44 @@ public class MainActivity extends AppCompatActivity {
         this.adapterListDestinationsFound = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, this.listDestinationsFound);
     }
 
-    private void configListView() {
+    private void configAdapterListDestinationsRecents() {
+        this.adapterListDestinationsRecentes = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, this.listDestinationsRecents);
+    }
+
+    private void configListViewFounds() {
         ListView listView = findViewById(R.id.listViewDestinationsFound);
         listView.setAdapter(this.adapterListDestinationsFound);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 DestinationModelView dest = (DestinationModelView) adapterView.getAdapter().getItem(i);
+                addToRecentes(dest);
                 destinationSelected(dest);
+                updateListViewFoundHeight(1);
+                updateListViewRecentsHeight(1);
             }
         });
     }
 
-    private void updateListView() {
+    private void configListViewRecents() {
+        ListView listView = findViewById(R.id.listViewDestinationsRecents);
+        listView.setAdapter(this.adapterListDestinationsRecentes);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                DestinationModelView dest = (DestinationModelView) adapterView.getAdapter().getItem(i);
+                destinationSelected(dest);
+                updateListViewFoundHeight(1);
+                updateListViewRecentsHeight(1);
+            }
+        });
+    }
+
+    private void updateListViewFound() {
         this.adapterListDestinationsFound.notifyDataSetChanged();
     }
 
-    private void updateListViewHeight() {
+    private void updateListViewFoundHeight() {
         ListView listView = findViewById(R.id.listViewDestinationsFound);
         int height = 80 * this.listDestinationsFound.size();
         height = height > 240 ? 240 : height;
@@ -117,10 +144,30 @@ public class MainActivity extends AppCompatActivity {
         listView.getLayoutParams().height = height;
     }
 
+    private void updateListViewRecentsHeight() {
+        ListView listView = findViewById(R.id.listViewDestinationsRecents);
+        int height = 80 * this.listDestinationsRecents.size();
+        height = height > 240 ? 240 : height;
+        height = height <= 0 ? 1 : height;
+        listView.getLayoutParams().height = height;
+    }
+
     private void destinationSelected(DestinationModelView dest) {
+        setEditSearch(dest);
         updateImageView(dest);
-        updateListViewHeight(1);
         hideKeyboard();
+    }
+
+    private void setEditSearch(DestinationModelView dest) {
+        EditText editSearch = findViewById(R.id.editTextTextSearch);
+        editSearch.setText(dest.getName());
+    }
+
+    private void addToRecentes(DestinationModelView dest) {
+        if(this.listDestinationsRecents.size() >= 3){
+            this.listDestinationsRecents.remove(0);
+        }
+        this.listDestinationsRecents.add(dest);
     }
 
     private void hideKeyboard() {
@@ -129,24 +176,19 @@ public class MainActivity extends AppCompatActivity {
         input.hideSoftInputFromWindow(editSearch.getWindowToken(), 0);
     }
 
-    private void updateListViewHeight(int height) {
+    private void updateListViewFoundHeight(int height) {
         ListView listView = findViewById(R.id.listViewDestinationsFound);
+        listView.getLayoutParams().height = height;
+    }
+
+    private void updateListViewRecentsHeight(int height) {
+        ListView listView = findViewById(R.id.listViewDestinationsRecents);
         listView.getLayoutParams().height = height;
     }
 
     private void updateImageView(DestinationModelView dest) {
         ImageView imageView = findViewById(R.id.imageView);
         imageView.setImageResource(dest.getIdImg());
-    }
-
-    private void configInitRecents() {
-        this.listDestinationsRecents.addAll(this.listDestinationLoaded.subList(0, 3));
-        setRecentsToFound();
-    }
-
-    private void setRecentsToFound() {
-        this.listDestinationsFound.clear();
-        this.listDestinationsFound.addAll(this.listDestinationsRecents);
     }
 
 }
