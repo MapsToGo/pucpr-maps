@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private List<DestinationModelView> listDestinationLoaded = new ArrayList<>();
     private List<DestinationModelView> listDestinationsFound = new ArrayList<>();
     private List<DestinationModelView> listDestinationsRecents = new ArrayList<>();
-    private ArrayAdapter<DestinationModelView> adapterListDestinationsFound;
-    private ArrayAdapter<DestinationModelView> adapterListDestinationsRecentes;
+    private AdapterDestination adapterListDestinationsFound;
+    private AdapterDestination adapterListDestinationsRecentes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,11 +105,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configAdapterListDestinationsFound() {
-        this.adapterListDestinationsFound = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, this.listDestinationsFound);
+        this.adapterListDestinationsFound = new AdapterDestination(this.listDestinationsFound, this);
     }
 
     private void configAdapterListDestinationsRecents() {
-        this.adapterListDestinationsRecentes = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, this.listDestinationsRecents);
+        this.adapterListDestinationsRecentes = new AdapterDestination(this.listDestinationsRecents, this);
     }
 
     private void configListViewFounds() {

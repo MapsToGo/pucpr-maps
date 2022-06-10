@@ -68,23 +68,6 @@
         app:layout_constraintTop_toBottomOf="@+id/editTextTextSearch"
         app:layout_constraintVertical_bias="0.022" />
 
-    <TextView
-        android:id="@+id/textViewTitleRecents"
-        android:layout_width="match_parent"
-        android:layout_height="23dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="1dp"
-        android:elevation="2dp"
-        android:text="Recentes"
-        android:background="@drawable/myrect"
-        android:textAlignment="center"
-        android:textColor="#2F1533"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/listViewDestinationsRecents"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <ListView
         android:id="@+id/listViewDestinationsRecents"
         android:layout_width="match_parent"
@@ -96,6 +79,18 @@
         app:layout_constraintBottom_toBottomOf="@+id/imageViewDestinations"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="63dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="1dp"
+        android:elevation="2dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/listViewDestinationsRecents"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/title_recentes" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
