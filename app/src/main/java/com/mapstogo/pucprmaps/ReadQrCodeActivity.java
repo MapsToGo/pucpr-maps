@@ -21,7 +21,6 @@ public class ReadQrCodeActivity extends AppCompatActivity {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              //  setImageSearchInit();
                 goToMainActivity();
             }
         });
