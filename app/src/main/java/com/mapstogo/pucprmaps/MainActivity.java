@@ -20,26 +20,36 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<DestinationModelView> listDestinationLoaded = new ArrayList<>();
     private List<DestinationModelView> listDestinationsFound = new ArrayList<>();
     private List<DestinationModelView> listDestinationsRecents = new ArrayList<>();
     private AdapterDestination adapterListDestinationsFound;
     private AdapterDestination adapterListDestinationsRecentes;
 
+    private Destinations destinations;
+    private DestinationModelView destStart;
+    private DestinationModelView destCurrent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        loadDestinations();
+        configDestinations();
         configEditText();
         configAdapterListDestinationsFound();
         configAdapterListDestinationsRecents();
         configListViewFounds();
         configListViewRecents();
         configIconQrCode();
+        configImgDestinations();
+    }
+
+    private void configDestinations() {
+        this.destinations = new DestinationModelViewMemoryFactory().createListDestinations();
+        this.destStart = this.destinations.getDestinationByName("Portão");
     }
 
     private void configIconQrCode() {
@@ -55,11 +65,6 @@ public class MainActivity extends AppCompatActivity {
     private void gotoImageViewReadCamera() {
         Intent intentGoToImageViewCamera = new Intent(this, ReadQrCodeActivity.class);
         startActivity(intentGoToImageViewCamera);
-    }
-
-    private void loadDestinations() {
-        List<DestinationModelView> listLoaded = new DestinationModelViewMemoryFactory().createListDestinationsModelView();
-        this.listDestinationLoaded.addAll(listLoaded);
     }
 
     private void configEditText() {
@@ -97,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         String strSearch = charSequence.toString().toLowerCase();
-        for(DestinationModelView dest : this.listDestinationLoaded){
+        for(DestinationModelView dest : this.destinations.getDestinations()){
             if(dest.getName().toLowerCase().contains(strSearch)){
                 this.listDestinationsFound.add(dest);
             }
@@ -120,7 +125,8 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 DestinationModelView dest = (DestinationModelView) adapterView.getAdapter().getItem(i);
                 addToRecentes(dest);
-                destinationSelected(dest);
+                DestinationModelView start= findDestStartPath(dest);
+                destinationSelected(start);
                 updateListViewFoundHeight(1);
                 updateListViewRecentsHeight(1);
             }
@@ -134,7 +140,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 DestinationModelView dest = (DestinationModelView) adapterView.getAdapter().getItem(i);
-                destinationSelected(dest);
+                DestinationModelView start= findDestStartPath(dest);
+                destinationSelected(start);
                 updateListViewFoundHeight(1);
                 updateListViewRecentsHeight(1);
             }
@@ -162,9 +169,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void destinationSelected(DestinationModelView dest) {
+        this.destCurrent = dest;
         setEditSearch(dest);
         updateImageView(dest);
         hideKeyboard();
+    }
+
+    private DestinationModelView findDestStartPath(DestinationModelView arrival) {
+        return this.destinations.mountInversePath(this.destStart, arrival);
     }
 
     private void setEditSearch(DestinationModelView dest) {
@@ -209,5 +221,21 @@ public class MainActivity extends AppCompatActivity {
     private void setImageSearchInit() {
         ImageView imageView = findViewById(R.id.imageViewDestinations);
         imageView.setImageResource(R.drawable.img_map_init);
+    }
+
+    private void configImgDestinations() {
+        ImageView imageView = findViewById(R.id.imageViewDestinations);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkDestCurrent();
+            }
+        });
+    }
+
+    private void checkDestCurrent() {
+        if(Objects.nonNull(this.destCurrent) &&
+                Objects.nonNull(this.destCurrent.getNext()))
+            destinationSelected(this.destCurrent.getNext());
     }
 }
