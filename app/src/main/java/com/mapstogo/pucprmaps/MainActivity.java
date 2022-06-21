@@ -123,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 DestinationModelView dest = (DestinationModelView) adapterView.getAdapter().getItem(i);
                 addToRecentes(dest);
-                DestinationModelView start= findDestStartPath(dest);
-                destinationSelected(start);
+                DestinationModelView start = findDestStartPath(dest);
+                destinationSelected(start, dest);
                 updateListViewFoundHeight(1);
                 updateListViewRecentsHeight(1);
             }
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 DestinationModelView dest = (DestinationModelView) adapterView.getAdapter().getItem(i);
                 DestinationModelView start= findDestStartPath(dest);
-                destinationSelected(start);
+                destinationSelected(start, dest);
                 updateListViewFoundHeight(1);
                 updateListViewRecentsHeight(1);
             }
@@ -165,10 +165,23 @@ public class MainActivity extends AppCompatActivity {
         height = height <= 0 ? 1 : height;
         listView.getLayoutParams().height = height;
     }
-
+    /*
     private void destinationSelected(DestinationModelView dest) {
         this.destCurrent = dest;
         setEditSearch(dest);
+        updateImageView(dest);
+        hideKeyboard();
+    }
+    */
+    private void destinationSelected(DestinationModelView currentDest, DestinationModelView arriveDest) {
+        this.destCurrent = currentDest;
+        setEditSearch(arriveDest);
+        updateImageView(currentDest);
+        hideKeyboard();
+    }
+
+    private void destinationNext(DestinationModelView dest) {
+        this.destCurrent = dest;
         updateImageView(dest);
         hideKeyboard();
     }
@@ -244,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
     private void checkSavedCurrentDest() {
         if(Objects.nonNull(this.destCurrent) &&
                 Objects.nonNull(this.destCurrent.getNext()))
-            destinationSelected(this.destCurrent.getNext());
+            destinationNext(this.destCurrent.getNext());
     }
 
     @Override
@@ -281,12 +294,12 @@ public class MainActivity extends AppCompatActivity {
         int count = 1;
         do {
             destCurrentAsStr = savedInstanceState.getString("img_"+String.valueOf(++count));
-            if(destCurrent != null){
+            if(Objects.nonNull(destCurrentAsStr)){
                 destAux.configNext(this.destinations.getDestinationByName(destCurrentAsStr));
                 destAux = destAux.getNext();
             }
-        } while(destCurrentAsStr != null);
-        destinationSelected(destCurrent);
+        } while(Objects.nonNull(destCurrentAsStr));
+        destinationSelected(destCurrent, destAux);
     }
 
     private void checkImgFromIntent() {
