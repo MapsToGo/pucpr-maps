@@ -1,22 +1,18 @@
 package com.mapstogo.pucprmaps;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
         configListViewRecents();
         configIconQrCode();
         configImgDestinations();
+        configImgRecentes();
+        checkImgFromIntent();
     }
 
     private void configDestinations() {
@@ -184,6 +182,11 @@ public class MainActivity extends AppCompatActivity {
         editSearch.setText(dest.getName());
     }
 
+    private void setEditSearch2(String str) {
+        EditText editSearch = findViewById(R.id.editTextTextSearch);
+        editSearch.setText(str);
+    }
+
     private void addToRecentes(DestinationModelView dest) {
         if(this.listDestinationsRecents.size() >= 3){
             this.listDestinationsRecents.remove(0);
@@ -212,12 +215,6 @@ public class MainActivity extends AppCompatActivity {
         imageView.setImageResource(dest.getIdImg());
     }
 
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        setImageSearchInit();
-    }
-
     private void setImageSearchInit() {
         ImageView imageView = findViewById(R.id.imageViewDestinations);
         imageView.setImageResource(R.drawable.img_map_init);
@@ -228,14 +225,77 @@ public class MainActivity extends AppCompatActivity {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkDestCurrent();
+                checkSavedCurrentDest();
             }
         });
     }
 
-    private void checkDestCurrent() {
+    private void configImgRecentes() {
+        ImageView imageView = findViewById(R.id.imageViewRecentesControle);
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ImageView imageView = findViewById(R.id.imageViewRecentes);
+                imageView.getLayoutParams().height = 300;
+            }
+        });
+    }
+
+    private void checkSavedCurrentDest() {
         if(Objects.nonNull(this.destCurrent) &&
                 Objects.nonNull(this.destCurrent.getNext()))
             destinationSelected(this.destCurrent.getNext());
     }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        checkSavedCurrentDest(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        saveCurrentDest(outState);
+        super.onSaveInstanceState(outState);
+    }
+
+    private void saveCurrentDest(Bundle outState) {
+        if(Objects.isNull(this.destCurrent)){
+            return;
+        }
+        DestinationModelView destAux = this.destCurrent;
+        int count = 0;
+        while(destAux != null){
+            outState.putString("img_"+String.valueOf(++count), destAux.getName());
+            destAux = destAux.getNext();
+        }
+    }
+
+    private void checkSavedCurrentDest(Bundle savedInstanceState) {
+        if(savedInstanceState == null || savedInstanceState.getString("img_1") == null){
+            return;
+        }
+        String destCurrentAsStr = savedInstanceState.getString("img_1");
+        DestinationModelView destCurrent = this.destinations.getDestinationByName(destCurrentAsStr);
+        DestinationModelView destAux = destCurrent;
+        int count = 1;
+        do {
+            destCurrentAsStr = savedInstanceState.getString("img_"+String.valueOf(++count));
+            if(destCurrent != null){
+                destAux.configNext(this.destinations.getDestinationByName(destCurrentAsStr));
+                destAux = destAux.getNext();
+            }
+        } while(destCurrentAsStr != null);
+        destinationSelected(destCurrent);
+    }
+
+    private void checkImgFromIntent() {
+        Intent intent = getIntent();
+        int idImg = intent.getIntExtra("imgIntent", 0);
+        if(idImg > 0){
+            ImageView imageView = findViewById(R.id.imageViewDestinations);
+            imageView.setImageResource(idImg);
+        }
+    }
+
 }

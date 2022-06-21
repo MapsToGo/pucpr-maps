@@ -26,13 +26,9 @@ public class ReadQrCodeActivity extends AppCompatActivity {
         });
     }
 
-    private void setImageSearchInit() {
-        ImageView imageView = findViewById(R.id.imageViewDestinations);
-        imageView.setImageResource(R.drawable.img_map_init);
-    }
-
     private void goToMainActivity() {
         Intent intentGoToMainActivity = new Intent(this, MainActivity.class);
+        intentGoToMainActivity.putExtra("imgIntent", R.drawable.portao_biblioteca);
         startActivity(intentGoToMainActivity);
     }
 }
