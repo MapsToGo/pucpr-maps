@@ -27,7 +27,10 @@ public class MainActivity extends AppCompatActivity {
 
     private Destinations destinations;
     private DestinationModelView destStart;
+    //private DestinationModelView destPrevious;
     private DestinationModelView destCurrent;
+    private String[] arrayNext = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"};
+    private String[] arrayPrevious = {"101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,12 +45,24 @@ public class MainActivity extends AppCompatActivity {
         configIconQrCode();
         configImgDestinations();
         configImgRecentes();
+        configImgActiveBackArrow();
         checkImgFromIntent();
+    }
+
+    private void configImgActiveBackArrow() {
+        ImageView activeImg = findViewById(R.id.imageViewSetaVoltarAti);
+        activeImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                previousDestination();
+            }
+        });
     }
 
     private void configDestinations() {
         this.destinations = new DestinationModelViewMemoryFactory().createListDestinations();
         this.destStart = this.destinations.getDestinationByName("Portão");
+        this.destCurrent = this.destStart;
     }
 
     private void configIconQrCode() {
@@ -165,24 +180,42 @@ public class MainActivity extends AppCompatActivity {
         height = height <= 0 ? 1 : height;
         listView.getLayoutParams().height = height;
     }
-    /*
-    private void destinationSelected(DestinationModelView dest) {
-        this.destCurrent = dest;
-        setEditSearch(dest);
-        updateImageView(dest);
-        hideKeyboard();
-    }
-    */
-    private void destinationSelected(DestinationModelView currentDest, DestinationModelView arriveDest) {
-        this.destCurrent = currentDest;
+
+    private void destinationSelected(DestinationModelView nextCurrentDest, DestinationModelView arriveDest) {
+        nextCurrentDest.configPrevious(this.destCurrent);
+        this.destCurrent = nextCurrentDest;
         setEditSearch(arriveDest);
-        updateImageView(currentDest);
+        updateImageBackArrow();
+        updateImageView(this.destCurrent);
         hideKeyboard();
     }
 
-    private void destinationNext(DestinationModelView dest) {
-        this.destCurrent = dest;
-        updateImageView(dest);
+    private void restaureState(DestinationModelView nextCurrentDest, DestinationModelView arriveDest) {
+        this.destCurrent = nextCurrentDest;
+        setEditSearch(arriveDest);
+        updateImageBackArrow();
+        updateImageView(this.destCurrent);
+        hideKeyboard();
+    }
+
+    private void previousDestination() {
+        if(Objects.isNull(this.destCurrent) ||
+                Objects.isNull(this.destCurrent.getPrevious()))
+            return;
+        this.destCurrent = this.destCurrent.getPrevious();
+        updateImageBackArrow();
+        updateImageView(this.destCurrent);
+        hideKeyboard();
+    }
+
+    private void nextDestination() {
+        if(Objects.isNull(this.destCurrent) ||
+                Objects.isNull(this.destCurrent.getNext()))
+            return;
+        this.destCurrent.getNext().configPrevious(this.destCurrent);
+        this.destCurrent = this.destCurrent.getNext();
+        updateImageBackArrow();
+        updateImageView(this.destCurrent);
         hideKeyboard();
     }
 
@@ -238,26 +271,19 @@ public class MainActivity extends AppCompatActivity {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkSavedCurrentDest();
+                nextDestination();
             }
         });
     }
 
     private void configImgRecentes() {
-        ImageView imageView = findViewById(R.id.imageViewRecentesControle);
+        ImageView imageView = findViewById(R.id.imageViewRecentes);
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ImageView imageView = findViewById(R.id.imageViewRecentes);
-                imageView.getLayoutParams().height = 300;
+                updateListViewRecentsHeight();
             }
         });
-    }
-
-    private void checkSavedCurrentDest() {
-        if(Objects.nonNull(this.destCurrent) &&
-                Objects.nonNull(this.destCurrent.getNext()))
-            destinationNext(this.destCurrent.getNext());
     }
 
     @Override
@@ -276,30 +302,58 @@ public class MainActivity extends AppCompatActivity {
         if(Objects.isNull(this.destCurrent)){
             return;
         }
-        DestinationModelView destAux = this.destCurrent;
-        int count = 0;
-        while(destAux != null){
-            outState.putString("img_"+String.valueOf(++count), destAux.getName());
+
+        outState.putString("current", this.destCurrent.getName());
+        DestinationModelView destAux = this.destCurrent.getNext();
+
+        for(String next : this.arrayNext){
+            if(destAux == null)
+                break;
+            outState.putString(next, destAux.getName());
             destAux = destAux.getNext();
+        }
+
+        destAux = this.destCurrent.getPrevious();
+        for(String previous : this.arrayPrevious){
+            if(destAux == null)
+                break;
+            outState.putString(previous, destAux.getName());
+            destAux = destAux.getPrevious();
         }
     }
 
     private void checkSavedCurrentDest(Bundle savedInstanceState) {
-        if(savedInstanceState == null || savedInstanceState.getString("img_1") == null){
+
+        if(savedInstanceState == null || savedInstanceState.getString("current") == null){
             return;
         }
-        String destCurrentAsStr = savedInstanceState.getString("img_1");
+
+        String destCurrentAsStr = savedInstanceState.getString("current");
         DestinationModelView destCurrent = this.destinations.getDestinationByName(destCurrentAsStr);
-        DestinationModelView destAux = destCurrent;
-        int count = 1;
-        do {
-            destCurrentAsStr = savedInstanceState.getString("img_"+String.valueOf(++count));
+        DestinationModelView nextDestAux = destCurrent;
+
+        for(String next : this.arrayNext){
+            destCurrentAsStr = savedInstanceState.getString(next);
             if(Objects.nonNull(destCurrentAsStr)){
-                destAux.configNext(this.destinations.getDestinationByName(destCurrentAsStr));
-                destAux = destAux.getNext();
+                nextDestAux.configNext(this.destinations.getDestinationByName(destCurrentAsStr));
+                nextDestAux = nextDestAux.getNext();
+            } else {
+                break;
             }
-        } while(Objects.nonNull(destCurrentAsStr));
-        destinationSelected(destCurrent, destAux);
+        }
+
+        DestinationModelView previousDestAux = destCurrent;
+        for(String previous : this.arrayPrevious){
+            destCurrentAsStr = savedInstanceState.getString(previous);
+            if(Objects.nonNull(destCurrentAsStr)){
+                previousDestAux.configPrevious(this.destinations.getDestinationByName(destCurrentAsStr));
+                previousDestAux = previousDestAux.getPrevious();
+            } else {
+                break;
+            }
+        }
+
+        restaureState(destCurrent, nextDestAux);
     }
 
     private void checkImgFromIntent() {
@@ -309,6 +363,24 @@ public class MainActivity extends AppCompatActivity {
             ImageView imageView = findViewById(R.id.imageViewDestinations);
             imageView.setImageResource(idImg);
         }
+    }
+
+    private void updateImageBackArrow() {
+        ImageView activeImg = findViewById(R.id.imageViewSetaVoltarAti);
+        ImageView inactiveImg = findViewById(R.id.imageViewSetaVoltarIna);
+        if(Objects.nonNull(this.destCurrent.getPrevious())){
+            activeImg.setVisibility(View.VISIBLE);
+            inactiveImg.setVisibility(View.INVISIBLE);
+        } else {
+            activeImg.setVisibility(View.INVISIBLE);
+            inactiveImg.setVisibility(View.VISIBLE);
+            clearEditSearch();
+        }
+    }
+
+    private void clearEditSearch() {
+        EditText editSearch = findViewById(R.id.editTextTextSearch);
+        editSearch.setText(null);
     }
 
 }
