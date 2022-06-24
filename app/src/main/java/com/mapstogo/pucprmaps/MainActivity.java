@@ -3,6 +3,7 @@ package com.mapstogo.pucprmaps;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.appsearch.AppSearchSchema;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -27,10 +28,10 @@ public class MainActivity extends AppCompatActivity {
 
     private Destinations destinations;
     private DestinationModelView destStart;
-    //private DestinationModelView destPrevious;
     private DestinationModelView destCurrent;
     private String[] arrayNext = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"};
     private String[] arrayPrevious = {"101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", "113"};
+    private boolean stateRestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +98,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void searchTextChanged(CharSequence charSequence) {
+        if(this.stateRestore){
+            configStateRestore(false);
+            return;
+        }
         filterListDestinationFound(charSequence);
         if(charSequence.toString().equalsIgnoreCase("")){
             updateListViewRecentsHeight();
@@ -161,6 +166,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void configStateRestore(boolean stateRestore) {
+        this.stateRestore = stateRestore;
+    }
+
     private void updateListViewFound() {
         this.adapterListDestinationsFound.notifyDataSetChanged();
     }
@@ -192,7 +201,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void restaureState(DestinationModelView nextCurrentDest, DestinationModelView arriveDest) {
         this.destCurrent = nextCurrentDest;
-        setEditSearch(arriveDest);
         updateImageBackArrow();
         updateImageView(this.destCurrent);
         hideKeyboard();
@@ -202,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
         if(Objects.isNull(this.destCurrent) ||
                 Objects.isNull(this.destCurrent.getPrevious()))
             return;
+        this.destCurrent.getPrevious().configNext(this.destCurrent);
         this.destCurrent = this.destCurrent.getPrevious();
         updateImageBackArrow();
         updateImageView(this.destCurrent);
@@ -228,11 +237,6 @@ public class MainActivity extends AppCompatActivity {
         editSearch.setText(dest.getName());
     }
 
-    private void setEditSearch2(String str) {
-        EditText editSearch = findViewById(R.id.editTextTextSearch);
-        editSearch.setText(str);
-    }
-
     private void addToRecentes(DestinationModelView dest) {
         if(this.listDestinationsRecents.size() >= 3){
             this.listDestinationsRecents.remove(0);
@@ -241,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void hideKeyboard() {
+        if(this.stateRestore)return;
         InputMethodManager input = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         EditText editSearch = findViewById(R.id.editTextTextSearch);
         input.hideSoftInputFromWindow(editSearch.getWindowToken(), 0);
@@ -288,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        configStateRestore(true);
         super.onRestoreInstanceState(savedInstanceState);
         checkSavedCurrentDest(savedInstanceState);
     }

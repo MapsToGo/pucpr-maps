@@ -28,7 +28,7 @@ public class ReadQrCodeActivity extends AppCompatActivity {
 
     private void goToMainActivity() {
         Intent intentGoToMainActivity = new Intent(this, MainActivity.class);
-        intentGoToMainActivity.putExtra("imgIntent", R.drawable.portao_biblioteca);
+        intentGoToMainActivity.putExtra("imgIntent", R.drawable.bloco_azul_terrreo_destino_escada);
         startActivity(intentGoToMainActivity);
     }
 }
